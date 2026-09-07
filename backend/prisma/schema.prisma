@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider     = "prisma-client"
   output       = "../generated/prisma"
@@ -11,90 +6,71 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-
 }
-
-
 
 model Usuario {
-  id        Int    @id @default(autoincrement())
-  nombre    String
-  correo    String @unique
-  usuario   String @unique
+  id         Int     @id @default(autoincrement())
+  nombre     String
+  correo     String  @unique
+  usuario    String  @unique
   contrasena String
-  rol       String @default("cliente")
-
-  ventas    Venta[]
+  rol        String  @default("cliente")
+  ventas     Venta[]
 }
-
-
 
 model Medicamento {
-  id              String   @id
-  nombre          String
-  laboratorio     String
-  descripcion     String
-  stock           Int
-  precioCompra    Float
-  precioVenta     Float
-  estado          String   @default("Activo")
-
-  detallesCompra  DetalleCompra[]
-  detallesVenta   DetalleVenta[]
+  id             String          @id
+  nombre         String
+  laboratorio    String
+  descripcion    String
+  stock          Int
+  precioCompra   Float
+  precioVenta    Float
+  estado         String          @default("Activo")
+  detallesCompra DetalleCompra[]
+  detallesVenta  DetalleVenta[]
 }
-
-
 
 model Compra {
-  id              Int      @id @default(autoincrement())
-  fecha           DateTime
-  proveedor       String
-  numeroFactura   String
-  total           Float
-
-  detalles        DetalleCompra[]
+  id            Int             @id @default(autoincrement())
+  fecha         DateTime
+  proveedor     String
+  numeroFactura String
+  total         Float
+  detalles      DetalleCompra[]
 }
-
-
-
 
 model DetalleCompra {
-  id              Int      @id @default(autoincrement())
-  compraId        Int
-  medicamentoId   String
-  cantidad        Int
-  precioCompra    Float
-  precioVenta     Float
+  id               Int         @id @default(autoincrement())
+  compraId         Int
+  medicamentoId    String
+  cantidad         Int
+  precioCompra     Float
+  precioVenta      Float
   fechaVencimiento DateTime?
-  total           Float
-
-  compra          Compra       @relation(fields: [compraId], references: [id], onDelete: Cascade)
-  medicamento     Medicamento  @relation(fields: [medicamentoId], references: [id])
+  total            Float
+  compra           Compra      @relation(fields: [compraId], references: [id], onDelete: Cascade)
+  medicamento      Medicamento @relation(fields: [medicamentoId], references: [id])
 }
-
-
 
 model Venta {
-  id          Int      @id @default(autoincrement())
-  usuarioId   Int?
-  cliente     String
-  factura     String
-  fecha       DateTime
-  total       Float
-
-  usuario     Usuario? @relation(fields: [usuarioId], references: [id])
-  detalles    DetalleVenta[]
+  id        Int            @id @default(autoincrement())
+  usuarioId Int?
+  cliente   String
+  factura   String
+  fecha     DateTime
+  total     Float
+  detalles  DetalleVenta[]
+  usuario   Usuario?       @relation(fields: [usuarioId], references: [id])
 }
 
-
 model DetalleVenta {
-  id              Int      @id @default(autoincrement())
-  ventaId         Int
-  medicamentoId   String
-  cantidad        Int
-  precio          Float
-  total           Float
-
-  venta           Venta        @relation(fields: [ventaId], references: [id], onDelete: Cascade)
-  medicamento     Medicamento  @relation(fields: [medicamentoId], references: [id])
+  id            Int         @id @default(autoincrement())
+  ventaId       Int
+  medicamentoId String
+  cantidad      Int
+  precio        Float
+  total         Float
+  medicamento   Medicamento @relation(fields: [medicamentoId], references: [id])
+  venta         Venta       @relation(fields: [ventaId], references: [id], onDelete: Cascade)
 }
