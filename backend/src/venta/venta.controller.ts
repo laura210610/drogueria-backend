@@ -1,6 +1,17 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 
 import { VentaService } from './venta.service';
+
+import { CreateVentaDto } from './dto/create-venta.dto';
+import { UpdateVentaDto } from './dto/update-venta.dto';
 
 @Controller('venta')
 export class VentaController {
@@ -18,7 +29,10 @@ export class VentaController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() datos: any) {
+  update(
+    @Param('id') id: string,
+    @Body() datos: UpdateVentaDto,
+  ) {
     return this.ventaService.update(Number(id), datos);
   }
 
@@ -28,8 +42,7 @@ export class VentaController {
   }
 
   @Post()
-  create(@Body() datos: any) {
+  create(@Body() datos: CreateVentaDto) {
     return this.ventaService.create(datos);
   }
-
 }

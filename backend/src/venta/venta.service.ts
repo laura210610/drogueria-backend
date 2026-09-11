@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
+
 import { PrismaService } from '../prisma/prisma.service';
+
+import { CreateVentaDto } from './dto/create-venta.dto';
+import { UpdateVentaDto } from './dto/update-venta.dto';
 
 @Injectable()
 export class VentaService {
@@ -18,7 +22,7 @@ export class VentaService {
     });
   }
 
-  update(id: number, datos: any) {
+  update(id: number, datos: UpdateVentaDto) {
     return this.prisma.venta.update({
       where: {
         id: id,
@@ -26,7 +30,7 @@ export class VentaService {
       data: {
         cliente: datos.cliente,
         factura: datos.factura,
-        fecha: new Date(datos.fecha),
+        fecha: new Date(datos.fecha!),
         total: datos.total,
       },
     });
@@ -40,7 +44,7 @@ export class VentaService {
     });
   }
 
-  create(datos: any) {
+  create(datos: CreateVentaDto) {
     return this.prisma.venta.create({
       data: {
         cliente: datos.cliente,
@@ -50,5 +54,4 @@ export class VentaService {
       },
     });
   }
-
 }

@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateDetalleVentaDto } from './dto/create-detalle-venta.dto';
+import { UpdateDetalleVentaDto } from './dto/update-detalle-venta.dto';
 
 @Injectable()
 export class DetalleVentaService {
@@ -18,7 +20,7 @@ export class DetalleVentaService {
     });
   }
 
-  update(id: number, datos: any) {
+  update(id: number, datos: UpdateDetalleVentaDto) {
     return this.prisma.detalleVenta.update({
       where: {
         id: id,
@@ -41,7 +43,7 @@ export class DetalleVentaService {
     });
   }
 
-  create(datos: any) {
+  create(datos: CreateDetalleVentaDto) {
     return this.prisma.detalleVenta.create({
       data: {
         ventaId: datos.ventaId,
@@ -52,5 +54,4 @@ export class DetalleVentaService {
       },
     });
   }
-
 }
