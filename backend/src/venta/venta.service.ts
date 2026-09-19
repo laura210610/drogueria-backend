@@ -1,7 +1,5 @@
-import { Injectable } from '@nestjs/common';
-
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-
 import { CreateVentaDto } from './dto/create-venta.dto';
 import { UpdateVentaDto } from './dto/update-venta.dto';
 
@@ -14,16 +12,23 @@ export class VentaService {
     return this.prisma.venta.findMany();
   }
 
-  findOne(id: number) {
-    return this.prisma.venta.findUnique({
+  async findOne(id: number) {
+    const venta = await this.prisma.venta.findUnique({
       where: {
         id: id,
       },
     });
+
+    if(!venta){
+      throw new NotFoundException ('Venta no encontrada')
+    }
+    return venta;
   }
 
-  update(id: number, datos: UpdateVentaDto) {
-    return this.prisma.venta.update({
+  async update(id: number, datos: UpdateVentaDto) {
+
+    try{
+    return  await this.prisma.venta.update({
       where: {
         id: id,
       },
@@ -34,15 +39,25 @@ export class VentaService {
         total: datos.total,
       },
     });
+  } catch (error) {
+    throw new NotFoundException('Venta no encontrada');
   }
+}
 
-  remove(id: number) {
-    return this.prisma.venta.delete({
+  async remove(id: number) {
+
+    try{
+    return await this.prisma.venta.delete({
       where: {
         id: id,
       },
     });
+
+  } catch (error) {
+    throw new NotFoundException('Venta no encontrada');
+
   }
+}
 
   create(datos: CreateVentaDto) {
     return this.prisma.venta.create({

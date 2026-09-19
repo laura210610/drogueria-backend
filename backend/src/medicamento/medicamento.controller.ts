@@ -1,4 +1,4 @@
-import {Body,Controller,Delete,Get,Param,Patch,Post,} from '@nestjs/common';
+import {Body,Controller,Delete,Get,HttpCode,HttpStatus,Param,Patch,Post,} from '@nestjs/common';
 import { MedicamentoService } from './medicamento.service';
 import { CreateMedicamentoDto } from './dto/create-medicamento.dto';
 import { UpdateMedicamentoDto } from './dto/update-medicamento.dto';
@@ -27,8 +27,9 @@ export class MedicamentoController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.medicamentoService.remove(id);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string) {
+    await this.medicamentoService.remove(id);
   }
 
   @Post()

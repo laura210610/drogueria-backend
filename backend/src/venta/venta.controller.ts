@@ -1,22 +1,12 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
-
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, } from '@nestjs/common';
 import { VentaService } from './venta.service';
-
 import { CreateVentaDto } from './dto/create-venta.dto';
 import { UpdateVentaDto } from './dto/update-venta.dto';
 
 @Controller('venta')
 export class VentaController {
 
-  constructor(private readonly ventaService: VentaService) {}
+  constructor(private readonly ventaService: VentaService) { }
 
   @Get()
   findAll() {
@@ -37,8 +27,9 @@ export class VentaController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ventaService.remove(Number(id));
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string) {
+    await this.ventaService.remove(Number(id));
   }
 
   @Post()

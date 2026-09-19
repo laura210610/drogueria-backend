@@ -6,7 +6,7 @@ import { UpdateDetalleVentaDto } from './dto/update-detalle-venta.dto';
 @Injectable()
 export class DetalleVentaService {
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   findAll() {
     return this.prisma.detalleVenta.findMany();

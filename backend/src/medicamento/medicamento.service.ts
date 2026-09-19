@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
 
 import { CreateMedicamentoDto } from './dto/create-medicamento.dto';
 import { UpdateMedicamentoDto } from './dto/update-medicamento.dto';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class MedicamentoService {
@@ -11,19 +12,26 @@ export class MedicamentoService {
   constructor(private readonly prisma: PrismaService) {}
 
   findAll() {
-    return this.prisma.medicamento.findMany();
+    this.prisma.medicamento.findMany();
   }
 
-  findOne(id: string) {
-    return this.prisma.medicamento.findUnique({
+  async findOne(id: string) {
+    const medicamento = await this.prisma.medicamento.findUnique({
       where: {
         id: id,
       },
     });
+
+    if(!medicamento){
+      throw new NotFoundException('Medicamento no encontrado')
+    }
+    return medicamento;
   }
 
-  update(id: string, datos: UpdateMedicamentoDto) {
-    return this.prisma.medicamento.update({
+  async update(id: string, datos: UpdateMedicamentoDto) {
+
+    try{
+    return await this.prisma.medicamento.update({
       where: {
         id: id,
       },
@@ -37,15 +45,24 @@ export class MedicamentoService {
         estado: datos.estado,
       },
     });
+  } catch(error){
+    throw new NotFoundException('Medicamento no encontrado')
   }
+}
 
-  remove(id: string) {
-    return this.prisma.medicamento.delete({
+  async remove(id: string) {
+    
+    try{
+    return await this.prisma.medicamento.delete({
       where: {
         id: id,
       },
     });
+  }catch(error){
+    throw new NotFoundException('Medicamento no encontrado')
+
   }
+}
 
   create(datos: CreateMedicamentoDto) {
     return this.prisma.medicamento.create({
