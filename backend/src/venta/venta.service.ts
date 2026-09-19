@@ -26,7 +26,6 @@ export class VentaService {
   }
 
   async update(id: number, datos: UpdateVentaDto) {
-
     try{
     return  await this.prisma.venta.update({
       where: {
@@ -45,7 +44,6 @@ export class VentaService {
 }
 
   async remove(id: number) {
-
     try{
     return await this.prisma.venta.delete({
       where: {

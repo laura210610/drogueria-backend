@@ -1,4 +1,4 @@
-import {Body,Controller,Delete,Get,Param,Patch,Post,} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, } from '@nestjs/common';
 import { DetalleVentaService } from './detalle-venta.service';
 import { CreateDetalleVentaDto } from './dto/create-detalle-venta.dto';
 import { UpdateDetalleVentaDto } from './dto/update-detalle-venta.dto';
@@ -8,7 +8,7 @@ export class DetalleVentaController {
 
   constructor(
     private readonly detalleVentaService: DetalleVentaService,
-  ) {}
+  ) { }
 
   @Get()
   findAll() {
@@ -29,8 +29,9 @@ export class DetalleVentaController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.detalleVentaService.remove(Number(id));
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string) {
+    await this.detalleVentaService.remove(Number(id));
   }
 
   @Post()

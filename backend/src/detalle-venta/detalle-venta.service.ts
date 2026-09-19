@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDetalleVentaDto } from './dto/create-detalle-venta.dto';
 import { UpdateDetalleVentaDto } from './dto/update-detalle-venta.dto';
@@ -12,16 +12,23 @@ export class DetalleVentaService {
     return this.prisma.detalleVenta.findMany();
   }
 
-  findOne(id: number) {
-    return this.prisma.detalleVenta.findUnique({
+  async findOne(id: number) {
+    const detalleVenta = await this.prisma.detalleVenta.findUnique({
       where: {
         id: id,
       },
     });
+
+    if (!detalleVenta) {
+      throw new NotFoundException('detalle de venta no encontrado')
+    }
+    return detalleVenta
+
   }
 
-  update(id: number, datos: UpdateDetalleVentaDto) {
-    return this.prisma.detalleVenta.update({
+  async update(id: number, datos: UpdateDetalleVentaDto) {
+    try{
+    return await this.prisma.detalleVenta.update({
       where: {
         id: id,
       },
@@ -33,15 +40,22 @@ export class DetalleVentaService {
         total: datos.total,
       },
     });
+  }catch (error) {
+    throw new NotFoundException('detalle de venta no encontrado')
   }
+}
 
-  remove(id: number) {
-    return this.prisma.detalleVenta.delete({
+  async remove(id: number) {
+    try{
+    return await this.prisma.detalleVenta.delete({
       where: {
         id: id,
       },
     });
+  }catch (error) {
+    throw new NotFoundException('detalle de venta no encontrado')
   }
+}
 
   create(datos: CreateDetalleVentaDto) {
     return this.prisma.detalleVenta.create({

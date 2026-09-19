@@ -1,10 +1,7 @@
-import { Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
-
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-
 import { CreateMedicamentoDto } from './dto/create-medicamento.dto';
 import { UpdateMedicamentoDto } from './dto/update-medicamento.dto';
-import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class MedicamentoService {
@@ -12,7 +9,7 @@ export class MedicamentoService {
   constructor(private readonly prisma: PrismaService) {}
 
   findAll() {
-    this.prisma.medicamento.findMany();
+    return this.prisma.medicamento.findMany();
   }
 
   async findOne(id: string) {
