@@ -11,6 +11,7 @@ import { MedicamentoModule } from './medicamento/medicamento.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { AuthModule } from './auth/auth.module';
 import { CompraModule } from './compra/compra.module';
+import { DetalleCompraModule } from './detalle-compra/detalle-compra.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CompraModule } from './compra/compra.module';
     UsuarioModule,
     AuthModule,
     CompraModule,
+    DetalleCompraModule,
   ],
   controllers: [AppController],
   providers: [AppService],
