@@ -1,3 +1,4 @@
+
 generator client {
   provider     = "prisma-client"
   output       = "../generated/prisma"
@@ -6,6 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["proyecto10"]
 }
 
 model Usuario {
@@ -16,6 +18,8 @@ model Usuario {
   contrasena String
   rol        String  @default("cliente")
   ventas     Venta[]
+
+  @@schema("proyecto10")
 }
 
 model Medicamento {
@@ -29,6 +33,8 @@ model Medicamento {
   estado         String          @default("Activo")
   detallesCompra DetalleCompra[]
   detallesVenta  DetalleVenta[]
+
+  @@schema("proyecto10")
 }
 
 model Compra {
@@ -38,6 +44,8 @@ model Compra {
   numeroFactura String
   total         Float
   detalles      DetalleCompra[]
+
+  @@schema("proyecto10")
 }
 
 model DetalleCompra {
@@ -51,6 +59,8 @@ model DetalleCompra {
   total            Float
   compra           Compra      @relation(fields: [compraId], references: [id], onDelete: Cascade)
   medicamento      Medicamento @relation(fields: [medicamentoId], references: [id])
+
+  @@schema("proyecto10")
 }
 
 model Venta {
@@ -62,6 +72,8 @@ model Venta {
   total     Float
   detalles  DetalleVenta[]
   usuario   Usuario?       @relation(fields: [usuarioId], references: [id])
+
+  @@schema("proyecto10")
 }
 
 model DetalleVenta {
@@ -73,4 +85,6 @@ model DetalleVenta {
   total         Float
   medicamento   Medicamento @relation(fields: [medicamentoId], references: [id])
   venta         Venta       @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+
+  @@schema("proyecto10")
 }
