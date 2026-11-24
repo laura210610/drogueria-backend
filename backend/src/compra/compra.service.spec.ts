@@ -309,28 +309,26 @@ describe('CompraService', () => {
 
   describe('update - solo proveedor y fecha', () => {
     it('rechaza el body con 400 si trae total', async () => {
-      await expect(
-        service.update(1, { total: 500 } as never),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.update(1, { total: 500 })).rejects.toThrow(
+        BadRequestException,
+      );
       expect(tx.compra.update).not.toHaveBeenCalled();
     });
 
     it('rechaza el body con 400 si trae detalles', async () => {
-      await expect(
-        service.update(1, { detalles: [] } as never),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.update(1, { detalles: [] })).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('rechaza el body con 400 si trae numeroFactura (solo proveedor y fecha)', async () => {
-      await expect(
-        service.update(1, { numeroFactura: 'C-2' } as never),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.update(1, { numeroFactura: 'C-2' })).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('el mensaje del 400 es explícito sobre los campos permitidos', async () => {
-      await expect(
-        service.update(1, { total: 500 } as never),
-      ).rejects.toThrow(
+      await expect(service.update(1, { total: 500 })).rejects.toThrow(
         'Solo se puede modificar proveedor y fecha de la compra. Campos no permitidos: total',
       );
     });
@@ -341,7 +339,7 @@ describe('CompraService', () => {
       await service.update(1, {
         proveedor: 'Nuevo proveedor',
         fecha: '2025-02-01',
-      } as never);
+      });
 
       expect(tx.compra.update).toHaveBeenCalledWith({
         where: { id: 1 },
@@ -355,9 +353,9 @@ describe('CompraService', () => {
     it('si la compra no existe: 404', async () => {
       tx.compra.update.mockRejectedValue({ code: 'P2025' });
 
-      await expect(
-        service.update(999, { proveedor: 'X' } as never),
-      ).rejects.toThrow(new NotFoundException('Compra no encontrada'));
+      await expect(service.update(999, { proveedor: 'X' })).rejects.toThrow(
+        new NotFoundException('Compra no encontrada'),
+      );
     });
   });
 
@@ -403,9 +401,7 @@ describe('CompraService', () => {
         id: 1,
         detalles: [{ medicamentoId: 'MED001', cantidad: 5 }],
       });
-      tx.medicamento.findUnique.mockResolvedValue(
-        medicamento({ stock: 3 }),
-      );
+      tx.medicamento.findUnique.mockResolvedValue(medicamento({ stock: 3 }));
 
       await expect(service.remove(1)).rejects.toThrow(
         new ConflictException(
@@ -433,9 +429,7 @@ describe('CompraService', () => {
         id: 1,
         detalles: [{ medicamentoId: 'MED001', cantidad: 1 }],
       });
-      tx.medicamento.findUnique.mockResolvedValue(
-        medicamento({ stock: 8 }),
-      );
+      tx.medicamento.findUnique.mockResolvedValue(medicamento({ stock: 8 }));
 
       await service.remove(1);
 

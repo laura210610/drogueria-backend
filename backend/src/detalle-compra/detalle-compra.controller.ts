@@ -8,9 +8,7 @@ import { DetalleCompraService } from './detalle-compra.service';
 // transacción, borrado con descuento).
 @Controller('detalle-compra')
 export class DetalleCompraController {
-  constructor(
-    private readonly detalleCompraService: DetalleCompraService,
-  ) {}
+  constructor(private readonly detalleCompraService: DetalleCompraService) {}
 
   @Get()
   findAll() {

@@ -50,7 +50,13 @@ describe('DTO de medicamento - validación', () => {
 
     const propiedades = (await validate(dto)).map((e) => e.property);
     expect(propiedades).toEqual(
-      expect.arrayContaining(['id', 'nombre', 'laboratorio', 'precioCompra', 'precioVenta']),
+      expect.arrayContaining([
+        'id',
+        'nombre',
+        'laboratorio',
+        'precioCompra',
+        'precioVenta',
+      ]),
     );
   });
 

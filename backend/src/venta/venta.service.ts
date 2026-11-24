@@ -154,7 +154,9 @@ export class VentaService {
           where: { id },
           data: {
             ...(datos.cliente !== undefined ? { cliente: datos.cliente } : {}),
-            ...(datos.fecha !== undefined ? { fecha: new Date(datos.fecha) } : {}),
+            ...(datos.fecha !== undefined
+              ? { fecha: new Date(datos.fecha) }
+              : {}),
           },
         });
       });

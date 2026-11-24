@@ -104,9 +104,9 @@ describe('UsuarioService', () => {
   it('actualizar de usuario inexistente (P2025) lanza NotFoundException', async () => {
     prisma.usuario.update.mockRejectedValue({ code: 'P2025' });
 
-    await expect(
-      service.actualizar(999, { nombre: 'Nadie' }),
-    ).rejects.toThrow(NotFoundException);
+    await expect(service.actualizar(999, { nombre: 'Nadie' })).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('eliminar de usuario inexistente (P2025) lanza NotFoundException', async () => {

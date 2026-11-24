@@ -26,7 +26,7 @@ const SELECCION_PUBLICA = {
 
 @Injectable()
 export class UsuarioService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async listar(): Promise<UsuarioPublico[]> {
     return this.prisma.usuario.findMany({

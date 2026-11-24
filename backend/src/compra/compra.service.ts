@@ -164,7 +164,9 @@ export class CompraService {
             ...(datos.proveedor !== undefined
               ? { proveedor: datos.proveedor }
               : {}),
-            ...(datos.fecha !== undefined ? { fecha: new Date(datos.fecha) } : {}),
+            ...(datos.fecha !== undefined
+              ? { fecha: new Date(datos.fecha) }
+              : {}),
           },
         });
       });

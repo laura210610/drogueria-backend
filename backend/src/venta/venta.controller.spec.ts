@@ -6,16 +6,17 @@ import { VentaController } from './venta.controller';
 // tests fijan el contrato de acceso de las rutas de venta a nivel de
 // metadatos. Con un guard global registrado dejan de ser opcionales.
 describe('VentaController - metadata de acceso', () => {
-  const rolRequerido = (metodo: string) => {
-    return Reflect.getMetadata(ROLES_KEY, VentaController.prototype[metodo]);
-  };
+  // Se leen metadatos del metodo; la referencia nunca se invoca.
+  const prototipo = VentaController.prototype as unknown as Record<
+    string,
+    unknown
+  >;
 
-  const esPublica = (metodo: string) => {
-    return Reflect.getMetadata(
-      IS_PUBLIC_KEY,
-      VentaController.prototype[metodo],
-    );
-  };
+  const rolRequerido = (metodo: keyof VentaController): unknown =>
+    Reflect.getMetadata(ROLES_KEY, prototipo[metodo] as object) as unknown;
+
+  const esPublica = (metodo: keyof VentaController): unknown =>
+    Reflect.getMetadata(IS_PUBLIC_KEY, prototipo[metodo] as object) as unknown;
 
   it('POST /venta requiere rol admin', () => {
     expect(rolRequerido('create')).toEqual(['admin']);

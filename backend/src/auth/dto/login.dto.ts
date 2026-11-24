@@ -1,7 +1,6 @@
 import { IsNotEmpty, IsString, Matches } from 'class-validator';
 
 export class LoginDto {
-
   @IsString()
   @IsNotEmpty()
   @Matches(/\S/)

@@ -32,4 +32,20 @@ export default tseslint.config(
       "prettier/prettier": ["error", { endOfLine: "auto" }],
     },
   },
+  {
+    // En los tests, Jest devuelve `any` por diseño: `expect.objectContaining()`
+    // y `mock.calls` estan tipados como `any` en sus propias definiciones. Exigir
+    // `no-unsafe-*` ahi obliga a castear cada asercion sin ganar ninguna seguridad
+    // real, y el mock de Prisma se arma sin genericos a proposito para que un
+    // cambio de firma lo detecte `tsc`, no el linter. El codigo de produccion
+    // (todo `src/` sin `.spec.ts`) mantiene estas reglas en `error`.
+    files: ['**/*.spec.ts', 'test/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+    },
+  },
 );

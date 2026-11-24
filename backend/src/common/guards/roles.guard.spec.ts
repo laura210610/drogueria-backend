@@ -1,4 +1,8 @@
-import { ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import {
+  ExecutionContext,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { RolesGuard } from './roles.guard';
 
@@ -30,17 +34,15 @@ describe('RolesGuard', () => {
   it('rol admin pasa en ruta con @Roles("admin")', () => {
     reflector.getAllAndOverride.mockReturnValue(['admin']);
 
-    expect(
-      guard.canActivate(crearContexto({ rol: 'admin' })),
-    ).toBe(true);
+    expect(guard.canActivate(crearContexto({ rol: 'admin' }))).toBe(true);
   });
 
   it('rol cliente es rechazado con ForbiddenException en ruta con @Roles("admin")', () => {
     reflector.getAllAndOverride.mockReturnValue(['admin']);
 
-    expect(() =>
-      guard.canActivate(crearContexto({ rol: 'cliente' })),
-    ).toThrow(ForbiddenException);
+    expect(() => guard.canActivate(crearContexto({ rol: 'cliente' }))).toThrow(
+      ForbiddenException,
+    );
   });
 
   it('sin usuario autenticado lanza UnauthorizedException', () => {

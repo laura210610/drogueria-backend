@@ -7,16 +7,17 @@ import { MedicamentoController } from './medicamento.controller';
 // registrado dejan de ser opcionales: falta el @Roles() y el CRUD queda
 // abierto, sobra un @Public() y queda bloqueada toda la pantalla.
 describe('MedicamentoController - metadata de acceso', () => {
-  const rolRequerido = (metodo: string) => {
-    return Reflect.getMetadata(ROLES_KEY, MedicamentoController.prototype[metodo]);
-  };
+  // Se leen metadatos del metodo; la referencia nunca se invoca.
+  const prototipo = MedicamentoController.prototype as unknown as Record<
+    string,
+    unknown
+  >;
 
-  const esPublica = (metodo: string) => {
-    return Reflect.getMetadata(
-      IS_PUBLIC_KEY,
-      MedicamentoController.prototype[metodo],
-    );
-  };
+  const rolRequerido = (metodo: keyof MedicamentoController): unknown =>
+    Reflect.getMetadata(ROLES_KEY, prototipo[metodo] as object) as unknown;
+
+  const esPublica = (metodo: keyof MedicamentoController): unknown =>
+    Reflect.getMetadata(IS_PUBLIC_KEY, prototipo[metodo] as object) as unknown;
 
   it('POST /medicamento requiere rol admin', () => {
     expect(rolRequerido('create')).toEqual(['admin']);

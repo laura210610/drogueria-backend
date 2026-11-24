@@ -6,16 +6,17 @@ import { CompraController } from './compra.controller';
 // compra a nivel de metadatos. GET valen para cualquier rol autenticado;
 // las mutaciones solo para admin (RolesGuard global).
 describe('CompraController - metadata de acceso', () => {
-  const rolRequerido = (metodo: string) => {
-    return Reflect.getMetadata(ROLES_KEY, CompraController.prototype[metodo]);
-  };
+  // Se leen metadatos del metodo; la referencia nunca se invoca.
+  const prototipo = CompraController.prototype as unknown as Record<
+    string,
+    unknown
+  >;
 
-  const esPublica = (metodo: string) => {
-    return Reflect.getMetadata(
-      IS_PUBLIC_KEY,
-      CompraController.prototype[metodo],
-    );
-  };
+  const rolRequerido = (metodo: keyof CompraController): unknown =>
+    Reflect.getMetadata(ROLES_KEY, prototipo[metodo] as object) as unknown;
+
+  const esPublica = (metodo: keyof CompraController): unknown =>
+    Reflect.getMetadata(IS_PUBLIC_KEY, prototipo[metodo] as object) as unknown;
 
   it('POST /compra requiere rol admin', () => {
     expect(rolRequerido('create')).toEqual(['admin']);

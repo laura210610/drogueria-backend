@@ -4,8 +4,8 @@ import { DetalleVentaService } from './detalle-venta.service';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-    imports: [PrismaModule],
-    controllers: [DetalleVentaController],
-    providers: [DetalleVentaService],
+  imports: [PrismaModule],
+  controllers: [DetalleVentaController],
+  providers: [DetalleVentaService],
 })
-export class DetalleVentaModule { }
+export class DetalleVentaModule {}

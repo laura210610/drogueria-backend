@@ -37,9 +37,7 @@ describe('VentaService', () => {
     },
   };
 
-  const medicamentoStock = (
-    sobreescrito: Record<string, unknown> = {},
-  ) => ({
+  const medicamentoStock = (sobreescrito: Record<string, unknown> = {}) => ({
     id: 'MED001',
     nombre: 'Ibuprofeno 400mg',
     stock: 10,
@@ -144,7 +142,10 @@ describe('VentaService', () => {
       tx.medicamento.findUnique.mockResolvedValue(medicamentoStock());
       tx.venta.create.mockResolvedValue({ id: 1 });
 
-      await service.create(datosVenta([{ medicamentoId: 'MED001', cantidad: 10 }]), 7);
+      await service.create(
+        datosVenta([{ medicamentoId: 'MED001', cantidad: 10 }]),
+        7,
+      );
       expect(tx.medicamento.update).toHaveBeenCalledWith({
         where: { id: 'MED001' },
         data: { stock: 0, estado: 'Sin stock' },
@@ -189,7 +190,10 @@ describe('VentaService', () => {
       );
 
       await expect(
-        service.create(datosVenta([{ medicamentoId: 'MED001', cantidad: 5 }]), 7),
+        service.create(
+          datosVenta([{ medicamentoId: 'MED001', cantidad: 5 }]),
+          7,
+        ),
       ).rejects.toThrow(
         new ConflictException(
           'Stock insuficiente para "Ibuprofeno 400mg": disponibles 3, solicitados 5',
@@ -205,7 +209,10 @@ describe('VentaService', () => {
       tx.medicamento.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.create(datosVenta([{ medicamentoId: 'MEDXXX', cantidad: 1 }]), 7),
+        service.create(
+          datosVenta([{ medicamentoId: 'MEDXXX', cantidad: 1 }]),
+          7,
+        ),
       ).rejects.toThrow(
         new NotFoundException(
           'El medicamento "MEDXXX" no existe en el inventario',
@@ -237,31 +244,29 @@ describe('VentaService', () => {
 
   describe('update - solo cliente y fecha', () => {
     it('rechaza el body con 400 si trae total', async () => {
-      await expect(
-        service.update(1, { total: 500 } as never),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.update(1, { total: 500 })).rejects.toThrow(
+        BadRequestException,
+      );
       expect(tx.venta.delete).not.toHaveBeenCalled();
     });
 
     it('rechaza el body con 400 si trae detalles', async () => {
-      await expect(
-        service.update(1, { detalles: [] } as never),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.update(1, { detalles: [] })).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('rechaza el body con 400 si trae factura o usuarioId (solo cliente y fecha)', async () => {
-      await expect(
-        service.update(1, { factura: 'F-2' } as never),
-      ).rejects.toThrow(BadRequestException);
-      await expect(
-        service.update(1, { usuarioId: 3 } as never),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.update(1, { factura: 'F-2' })).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.update(1, { usuarioId: 3 })).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('el mensaje del 400 es explícito sobre los campos permitidos', async () => {
-      await expect(
-        service.update(1, { total: 500 } as never),
-      ).rejects.toThrow(
+      await expect(service.update(1, { total: 500 })).rejects.toThrow(
         'Solo se puede modificar cliente y fecha de la venta. Campos no permitidos: total',
       );
     });
@@ -272,7 +277,7 @@ describe('VentaService', () => {
       await service.update(1, {
         cliente: 'Nuevo cliente',
         fecha: '2025-02-01',
-      } as never);
+      });
 
       expect(tx.venta.update).toHaveBeenCalledWith({
         where: { id: 1 },
@@ -283,9 +288,9 @@ describe('VentaService', () => {
     it('si la venta no existe: 404', async () => {
       tx.venta.update.mockRejectedValue({ code: 'P2025' });
 
-      await expect(
-        service.update(999, { cliente: 'X' } as never),
-      ).rejects.toThrow(new NotFoundException('Venta no encontrada'));
+      await expect(service.update(999, { cliente: 'X' })).rejects.toThrow(
+        new NotFoundException('Venta no encontrada'),
+      );
     });
   });
 

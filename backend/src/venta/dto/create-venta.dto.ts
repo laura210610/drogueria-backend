@@ -1,5 +1,12 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsDateString, IsInt, IsString, Min, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsDateString,
+  IsInt,
+  IsString,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 
 // Fase 3 (T8): el backend recalcula precio y total desde el medicamento, así
 // que el cliente ya no los manda. usuarioId también se retiró del body:

@@ -6,12 +6,14 @@ import { DetalleVentaController } from './detalle-venta.controller';
 // El stock se gestiona únicamente por /venta. Estos tests fijan que los
 // GET exigen token (cualquier rol) y que las rutas de mutación ya no existen.
 describe('DetalleVentaController - metadata de acceso y rutas', () => {
-  const esPublica = (metodo: string) => {
-    return Reflect.getMetadata(
-      IS_PUBLIC_KEY,
-      DetalleVentaController.prototype[metodo],
-    );
-  };
+  // Se leen metadatos del metodo; la referencia nunca se invoca.
+  const prototipo = DetalleVentaController.prototype as unknown as Record<
+    string,
+    unknown
+  >;
+
+  const esPublica = (metodo: keyof DetalleVentaController): unknown =>
+    Reflect.getMetadata(IS_PUBLIC_KEY, prototipo[metodo] as object) as unknown;
 
   it('GET /detalle-venta NO es público: exige token de cualquier rol', () => {
     expect(esPublica('findAll')).toBeFalsy();

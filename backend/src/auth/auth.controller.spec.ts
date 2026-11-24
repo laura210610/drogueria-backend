@@ -7,21 +7,22 @@ import { AuthController } from './auth.controller';
 // lo bloqueaba: nadie podía iniciar sesión. Un test del servicio no lo detecta,
 // porque no pasa por el guard.
 describe('AuthController - metadata de acceso', () => {
-  it('POST /auth/login es público, si no el guard global bloquea el login', () => {
-    const esPublica = Reflect.getMetadata(
-      IS_PUBLIC_KEY,
-      AuthController.prototype.login,
-    );
+  // Se leen metadatos del metodo; la referencia nunca se invoca.
+  const prototipo = AuthController.prototype as unknown as Record<
+    string,
+    unknown
+  >;
 
-    expect(esPublica).toBe(true);
+  // Devuelve `unknown` a proposito: Reflect.getMetadata es `any` y el
+  // resultado se compara en un `expect`, no se usa para nada mas.
+  const esPublicaDe = (metodo: keyof AuthController): unknown =>
+    Reflect.getMetadata(IS_PUBLIC_KEY, prototipo[metodo] as object) as unknown;
+
+  it('POST /auth/login es público, si no el guard global bloquea el login', () => {
+    expect(esPublicaDe('login')).toBe(true);
   });
 
   it('GET /auth/me NO es público: requiere token', () => {
-    const esPublica = Reflect.getMetadata(
-      IS_PUBLIC_KEY,
-      AuthController.prototype.me,
-    );
-
-    expect(esPublica).toBeFalsy();
+    expect(esPublicaDe('me')).toBeFalsy();
   });
 });

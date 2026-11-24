@@ -32,7 +32,10 @@ describe('MedicamentoService', () => {
     jest.clearAllMocks();
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [MedicamentoService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        MedicamentoService,
+        { provide: PrismaService, useValue: prisma },
+      ],
     }).compile();
 
     service = module.get<MedicamentoService>(MedicamentoService);
@@ -46,7 +49,10 @@ describe('MedicamentoService', () => {
         estado: 'Sin stock',
       });
 
-      await service.create({ ...datosValidos, stock: 0 } as CreateMedicamentoDto);
+      await service.create({
+        ...datosValidos,
+        stock: 0,
+      });
 
       expect(prisma.medicamento.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -61,7 +67,7 @@ describe('MedicamentoService', () => {
         estado: 'Bajo stock',
       });
 
-      await service.create(datosValidos as CreateMedicamentoDto);
+      await service.create(datosValidos);
 
       expect(prisma.medicamento.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -77,7 +83,10 @@ describe('MedicamentoService', () => {
         estado: 'Activo',
       });
 
-      await service.create({ ...datosValidos, stock: 50 } as CreateMedicamentoDto);
+      await service.create({
+        ...datosValidos,
+        stock: 50,
+      });
 
       expect(prisma.medicamento.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -112,7 +121,7 @@ describe('MedicamentoService', () => {
     it('guarda solo la lista blanca de campos (sin propiedades extra del body)', async () => {
       prisma.medicamento.create.mockResolvedValue(datosValidos);
 
-      await service.create(datosValidos as CreateMedicamentoDto);
+      await service.create(datosValidos);
 
       const llamada = prisma.medicamento.create.mock.calls[0][0] as {
         data: Record<string, unknown>;
@@ -133,9 +142,9 @@ describe('MedicamentoService', () => {
   it('create con id duplicado (P2002) lanza ConflictException (409)', async () => {
     prisma.medicamento.create.mockRejectedValue({ code: 'P2002' });
 
-    await expect(
-      service.create(datosValidos as CreateMedicamentoDto),
-    ).rejects.toThrow(ConflictException);
+    await expect(service.create(datosValidos)).rejects.toThrow(
+      ConflictException,
+    );
   });
 
   describe('update', () => {
@@ -146,7 +155,7 @@ describe('MedicamentoService', () => {
         estado: 'Sin stock',
       });
 
-      await service.update('IBU-400', { stock: 0 } as UpdateMedicamentoDto);
+      await service.update('IBU-400', { stock: 0 });
 
       expect(prisma.medicamento.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -159,7 +168,9 @@ describe('MedicamentoService', () => {
     it('sin stock en el body no toca el estado existente', async () => {
       prisma.medicamento.update.mockResolvedValue(datosValidos);
 
-      await service.update('IBU-400', { nombre: 'Nombre nuevo' } as UpdateMedicamentoDto);
+      await service.update('IBU-400', {
+        nombre: 'Nombre nuevo',
+      });
 
       const llamada = prisma.medicamento.update.mock.calls[0][0] as {
         data: Record<string, unknown>;
@@ -170,10 +181,10 @@ describe('MedicamentoService', () => {
     it('ignora el estado del body y solo envía campos definidos', async () => {
       prisma.medicamento.update.mockResolvedValue(datosValidos);
 
-      await service.update(
-        'IBU-400',
-        { stock: 5, estado: 'Activo' } as unknown as UpdateMedicamentoDto,
-      );
+      await service.update('IBU-400', {
+        stock: 5,
+        estado: 'Activo',
+      } as unknown as UpdateMedicamentoDto);
 
       const llamada = prisma.medicamento.update.mock.calls[0][0] as {
         data: Record<string, unknown>;
@@ -184,9 +195,9 @@ describe('MedicamentoService', () => {
     it('registro inexistente (P2025) lanza NotFoundException (404)', async () => {
       prisma.medicamento.update.mockRejectedValue({ code: 'P2025' });
 
-      await expect(
-        service.update('NO-EXISTE', { stock: 1 } as UpdateMedicamentoDto),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.update('NO-EXISTE', { stock: 1 })).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -210,9 +221,7 @@ describe('MedicamentoService', () => {
       }
 
       expect(capturado).toBeInstanceOf(ConflictException);
-      expect((capturado as ConflictException).message).toMatch(
-        /movimientos/i,
-      );
+      expect((capturado as ConflictException).message).toMatch(/movimientos/i);
       expect((capturado as ConflictException).message).toMatch(
         /ventas o compras/i,
       );
