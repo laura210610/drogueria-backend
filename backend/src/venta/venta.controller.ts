@@ -2,7 +2,10 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post
 import { VentaService } from './venta.service';
 import { CreateVentaDto } from './dto/create-venta.dto';
 import { UpdateVentaDto } from './dto/update-venta.dto';
+import { Public } from '../common/decorators/public.decorator';
 
+// TODO Fase 2/3/4: quitar @Public() y exigir token/roles cuando el frontend envíe el JWT en todos los módulos de ventas.
+@Public()
 @Controller('venta')
 export class VentaController {
 

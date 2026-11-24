@@ -26,12 +26,13 @@ export class AuthService {
 
         const access_token = await this.jwtService.signAsync({
             sub: credenciales.id,
+            rol: credenciales.rol,
         });
 
         return {
             access_token,
             token_type: 'Bearer',
-             expires_in: Number(process.env.JWT_EXPIRES_IN ?? 3600),
+            expires_in: Number(process.env.JWT_EXPIRES_IN ?? 3600),
         };
     }
 }

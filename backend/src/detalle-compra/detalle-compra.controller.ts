@@ -14,7 +14,10 @@ import {
 import { DetalleCompraService } from './detalle-compra.service';
 import { CreateDetalleCompraDto } from './dto/create-detalle-compra.dto';
 import { UpdateDetalleCompraDto } from './dto/update-detalle-compra.dto';
+import { Public } from '../common/decorators/public.decorator';
 
+// TODO Fase 2/3/4: quitar @Public() y exigir token/roles cuando el frontend envíe el JWT en todos los módulos de detalle de compra.
+@Public()
 @Controller('detalle-compra')
 export class DetalleCompraController {
   constructor(

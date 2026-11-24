@@ -2,7 +2,10 @@ import {Body,Controller,Delete,Get,HttpCode,HttpStatus,Param,Patch,Post,} from '
 import { MedicamentoService } from './medicamento.service';
 import { CreateMedicamentoDto } from './dto/create-medicamento.dto';
 import { UpdateMedicamentoDto } from './dto/update-medicamento.dto';
+import { Public } from '../common/decorators/public.decorator';
 
+// TODO Fase 2/3/4: quitar @Public() y exigir token/roles cuando el frontend envíe el JWT en todos los módulos de medicamentos.
+@Public()
 @Controller('medicamento')
 export class MedicamentoController {
 
