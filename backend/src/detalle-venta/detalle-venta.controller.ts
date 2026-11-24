@@ -1,17 +1,14 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { DetalleVentaService } from './detalle-venta.service';
-import { CreateDetalleVentaDto } from './dto/create-detalle-venta.dto';
-import { UpdateDetalleVentaDto } from './dto/update-detalle-venta.dto';
-import { Public } from '../common/decorators/public.decorator';
 
-// TODO Fase 2/3/4: quitar @Public() y exigir token/roles cuando el frontend envíe el JWT en todos los módulos de detalle de venta.
-@Public()
+// Fase 3 (T8): solo quedan las consultas (GET, token de cualquier rol).
+// Los endpoints que mutan el detalle de venta se retiraron: permitían
+// registrar o editar líneas SIN descontar stock ni recalcular la venta.
+// El stock se gestiona únicamente por /venta (alta con descuento en una
+// transacción, borrado con reposición).
 @Controller('detalle-venta')
 export class DetalleVentaController {
-
-  constructor(
-    private readonly detalleVentaService: DetalleVentaService,
-  ) { }
+  constructor(private readonly detalleVentaService: DetalleVentaService) {}
 
   @Get()
   findAll() {
@@ -21,24 +18,5 @@ export class DetalleVentaController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.detalleVentaService.findOne(Number(id));
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() datos: UpdateDetalleVentaDto,
-  ) {
-    return this.detalleVentaService.update(Number(id), datos);
-  }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string) {
-    await this.detalleVentaService.remove(Number(id));
-  }
-
-  @Post()
-  create(@Body() datos: CreateDetalleVentaDto) {
-    return this.detalleVentaService.create(datos);
   }
 }
