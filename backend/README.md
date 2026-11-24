@@ -64,39 +64,32 @@ Nunca se versionan claves reales.
 
 ## Base de datos
 
-### Limitación conocida: una base nueva no se reconstruye con `prisma:migrate`
+### Base nueva vs. base ya migrada
 
-La migración `20260826215632_init` crea las tablas **sin calificar el esquema**, así
-que en una base vacía caen en `public`, y la migración siguiente
-(`20260827000000_unico_facturas`) exige `proyecto10`. El resultado es
-`prisma migrate deploy` fallando con `schema "proyecto10" does not exist`.
-
-La base de Railway funciona porque ya estaba migrada antes de que el esquema se
-declarara en `schema.prisma`. Reproducido sobre un PostgreSQL 16 vacío.
-
-Mientras no se decida reescribir el historial de migraciones (es un cambio sobre
-una base compartida, requiere `migrate resolve` en producción y no se hace sin
-decisión explícita), para levantar una base **nueva** hay que crearla a mano y
-dejar el historial en sincronía. Receta verificada de punta a punta:
+La base se reconstruye desde cero con un solo comando:
 
 ```bash
-# 1. Crear el esquema y aplicar las dos migraciones en orden
-psql "$DATABASE_URL" -c 'CREATE SCHEMA IF NOT EXISTS "proyecto10";'
-psql "$DATABASE_URL" \
-  -c 'SET search_path TO "proyecto10"' \
-  -f prisma/migrations/20260826215632_init/migration.sql
-psql "$DATABASE_URL" -f prisma/migrations/20260827000000_unico_facturas/migration.sql
-
-# 2. Marcar las dos como aplicadas sin volver a correrlas
-npx prisma migrate resolve --applied 20260826215632_init
-npx prisma migrate resolve --applied 20260827000000_unico_facturas
-
-# 3. Comprobar: status "up to date" y diff vacío contra schema.prisma
-npm run prisma:status
-npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script
+npm run prisma:migrate     # aplica 20261124182455_init_proyecto10 y crea el esquema
 ```
 
-Después de eso `npm run seed` deja la base con administrador y catálogo.
+La migración `20261124182455_init_proyecto10` crea el esquema `proyecto10` y califica
+todos los objetos, así que funciona sobre una base vacía. Reemplaza al historial
+anterior, que **no** servía para eso: su `init` creaba las tablas sin calificar el
+esquema (caían en `public`) y la migración siguiente exigía `proyecto10`, así que
+`prisma migrate deploy` fallaba con P3018 `schema "proyecto10" does not exist`.
+
+**Si la base ya existe y tiene el historial anterior aplicado** (es el caso de la
+base en Railway), hay que marcarla una sola vez como baselinada, porque sus tablas
+ya están creadas:
+
+```bash
+npx prisma migrate resolve --applied 20261124182455_init_proyecto10
+npm run prisma:status     # debe decir "Database schema is up to date!"
+```
+
+Después de eso `migrate deploy` responde "No pending migrations to apply" y no
+vuelve a ejecutar DDL. Las filas viejas que quedan en `_prisma_migrations` no
+molestan: Prisma las ignora. No borres datos ni el esquema para hacer esto.
 
 ### Migraciones y seed
 
