@@ -59,8 +59,10 @@ describe('CompraService', () => {
       ...sobreescrito,
     });
 
+  // El parametro va tipado con el DTO para que las pruebas puedan pasar
+  // `fechaVencimiento` (campo opcional del detalle, lo valida el DTO).
   const datosCompra = (
-    detalles = [
+    detalles: CreateCompraDto['detalles'] = [
       {
         medicamentoId: 'MED001',
         cantidad: 2,
