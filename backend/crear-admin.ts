@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { PrismaClient } from './generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
+import { opcionesDeConexion } from './src/prisma/conexion';
 
 // Crea el usuario administrador inicial leyendo las credenciales de variables
 // de entorno. Antes la contraseña estaba escrita en este archivo ('12345678'),
@@ -36,20 +37,9 @@ async function main() {
         return;
     }
 
-    const adapter = new PrismaPg(
-        {
-            connectionString: process.env.DATABASE_URL?.replace(
-                'sslmode=require',
-                '',
-            ),
-            ssl: {
-                rejectUnauthorized: false,
-            },
-        },
-        {
-            schema: 'proyecto10',
-        },
-    );
+    const adapter = new PrismaPg(opcionesDeConexion(process.env.DATABASE_URL), {
+        schema: 'proyecto10',
+    });
 
     const prisma = new PrismaClient({ adapter });
 

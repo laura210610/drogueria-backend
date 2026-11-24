@@ -31,8 +31,13 @@ curl http://localhost:3000
 # {"status":"ok","service":"drogueria-backend"}
 ```
 
-Si la base está vacía o desactualizada, `prisma:status` lo va a indicar; en ese
-caso corré `npm run prisma:migrate`.
+Si la base ya existe y está migrada, `prisma:status` lo confirma. **Si la base es
+nueva, `prisma:migrate` no alcanza**: ver la limitación conocida más abajo antes
+de seguir.
+
+Funciona igual contra un PostgreSQL local sin TLS. El backend activa SSL solo si
+la URL trae `sslmode=require` (el caso de Railway), así que una base local no
+necesita certificados.
 
 El archivo de variables **se llama `env.example`**, no `.env.example`: la
 política de seguridad del entorno de desarrollo no permite crear archivos con
@@ -58,6 +63,42 @@ está en `env.example`.
 Nunca se versionan claves reales.
 
 ## Base de datos
+
+### Limitación conocida: una base nueva no se reconstruye con `prisma:migrate`
+
+La migración `20260826215632_init` crea las tablas **sin calificar el esquema**, así
+que en una base vacía caen en `public`, y la migración siguiente
+(`20260827000000_unico_facturas`) exige `proyecto10`. El resultado es
+`prisma migrate deploy` fallando con `schema "proyecto10" does not exist`.
+
+La base de Railway funciona porque ya estaba migrada antes de que el esquema se
+declarara en `schema.prisma`. Reproducido sobre un PostgreSQL 16 vacío.
+
+Mientras no se decida reescribir el historial de migraciones (es un cambio sobre
+una base compartida, requiere `migrate resolve` en producción y no se hace sin
+decisión explícita), para levantar una base **nueva** hay que crearla a mano y
+dejar el historial en sincronía. Receta verificada de punta a punta:
+
+```bash
+# 1. Crear el esquema y aplicar las dos migraciones en orden
+psql "$DATABASE_URL" -c 'CREATE SCHEMA IF NOT EXISTS "proyecto10";'
+psql "$DATABASE_URL" \
+  -c 'SET search_path TO "proyecto10"' \
+  -f prisma/migrations/20260826215632_init/migration.sql
+psql "$DATABASE_URL" -f prisma/migrations/20260827000000_unico_facturas/migration.sql
+
+# 2. Marcar las dos como aplicadas sin volver a correrlas
+npx prisma migrate resolve --applied 20260826215632_init
+npx prisma migrate resolve --applied 20260827000000_unico_facturas
+
+# 3. Comprobar: status "up to date" y diff vacío contra schema.prisma
+npm run prisma:status
+npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script
+```
+
+Después de eso `npm run seed` deja la base con administrador y catálogo.
+
+### Migraciones y seed
 
 - Las migraciones viven en `prisma/migrations/` y el esquema de Prisma en
   `prisma/schema.prisma`, todo dentro del esquema PostgreSQL `proyecto10`.

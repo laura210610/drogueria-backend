@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { PrismaClient } from '../generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
+import { opcionesDeConexion } from '../src/prisma/conexion';
 
 // Punto de partida para una maquina limpia: deja la base con un administrador
 // y, si el catalogo esta vacio, cinco medicamentos de ejemplo.
@@ -79,20 +80,9 @@ function derivarEstado(stock: number): string {
 }
 
 function crearCliente(): PrismaClient {
-    const adapter = new PrismaPg(
-        {
-            connectionString: process.env.DATABASE_URL?.replace(
-                'sslmode=require',
-                '',
-            ),
-            ssl: {
-                rejectUnauthorized: false,
-            },
-        },
-        {
-            schema: 'proyecto10',
-        },
-    );
+    const adapter = new PrismaPg(opcionesDeConexion(process.env.DATABASE_URL), {
+        schema: 'proyecto10',
+    });
 
     return new PrismaClient({ adapter });
 }
