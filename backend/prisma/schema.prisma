@@ -41,7 +41,7 @@ model Compra {
   id            Int             @id @default(autoincrement())
   fecha         DateTime
   proveedor     String
-  numeroFactura String
+  numeroFactura String          @unique
   total         Float
   detalles      DetalleCompra[]
 
@@ -67,7 +67,7 @@ model Venta {
   id        Int            @id @default(autoincrement())
   usuarioId Int?
   cliente   String
-  factura   String
+  factura   String         @unique
   fecha     DateTime
   total     Float
   detalles  DetalleVenta[]
