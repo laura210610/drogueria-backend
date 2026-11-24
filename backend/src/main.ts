@@ -4,7 +4,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-
   const app = await NestFactory.create(AppModule);
 
   // Origen permitido configurable por variable de entorno
@@ -25,4 +24,7 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000);
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('No se pudo iniciar el backend:', error);
+  process.exitCode = 1;
+});

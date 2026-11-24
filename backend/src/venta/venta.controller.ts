@@ -15,6 +15,12 @@ import { CreateVentaDto } from './dto/create-venta.dto';
 import { UpdateVentaDto } from './dto/update-venta.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 
+// El usuario lo inyecta el guard global a partir del token; el `id` es lo único
+// que usa este controlador.
+type RequestConUsuario = {
+  user: { id: number };
+};
+
 // Fase 3 (T8): sin @Public. Las consultas (GET) valen para cualquier rol
 // autenticado; las mutaciones solo para admin (RolesGuard global).
 @Controller('venta')
@@ -34,7 +40,7 @@ export class VentaController {
   // usuarioId siempre sale del token JWT (request.user.id), nunca del body.
   @Roles('admin')
   @Post()
-  create(@Body() datos: CreateVentaDto, @Request() request) {
+  create(@Body() datos: CreateVentaDto, @Request() request: RequestConUsuario) {
     return this.ventaService.create(datos, request.user.id);
   }
 
