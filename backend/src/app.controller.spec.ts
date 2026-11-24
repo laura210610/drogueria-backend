@@ -15,8 +15,11 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('responde el estado del servicio en vez del saludo del starter', () => {
+      expect(appController.getHealth()).toEqual({
+        status: 'ok',
+        service: 'drogueria-backend',
+      });
     });
   });
 });
