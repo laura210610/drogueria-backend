@@ -12,7 +12,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: { sub: number }) {
+  // El payload incluye el rol; el usuario devuelto también lo trae
+  // para que el RolesGuard pueda decidir.
+  async validate(payload: { sub: number; rol: string }) {
     try {
       const usuario = await this.usuarioService.buscarPorId(payload.sub);
 

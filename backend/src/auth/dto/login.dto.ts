@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, Matches } from 'class-validator';
 
 export class LoginDto {
 
@@ -10,6 +10,5 @@ export class LoginDto {
   @IsString()
   @IsNotEmpty()
   @Matches(/\S/)
-  @MinLength(8)
   contrasena!: string;
 }

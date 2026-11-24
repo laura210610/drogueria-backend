@@ -1,5 +1,13 @@
-import { IsEmail, IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
+// El frontend envía también `rol`, pero no se declara aquí: el ValidationPipe
+// con whitelist lo descarta y el servicio siempre asigna rol 'cliente'.
 export class CreateUsuarioDto {
   @IsString()
   @IsNotEmpty()
@@ -19,8 +27,4 @@ export class CreateUsuarioDto {
   @Matches(/\S/)
   @MinLength(8)
   contrasena!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  rol!: string;
 }

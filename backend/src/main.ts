@@ -6,8 +6,14 @@ import { AppModule } from './app.module';
 async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
-  
-  app.enableCors();
+
+  // Origen permitido configurable por variable de entorno
+  // (separado por comas si hace falta más de uno).
+  const corsOrigin = (process.env.CORS_ORIGIN ?? 'http://localhost:4200')
+    .split(',')
+    .map((origen) => origen.trim());
+
+  app.enableCors({ origin: corsOrigin });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -19,4 +25,4 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000);
 }
 
-bootstrap();      
+bootstrap();

@@ -1,5 +1,9 @@
 import { Type } from 'class-transformer';
-import {IsArray,IsDateString,IsInt,IsNumber,IsOptional,IsString,Min,ValidateNested,} from 'class-validator';
+import { IsArray, IsDateString, IsInt, IsString, Min, ValidateNested } from 'class-validator';
+
+// Fase 3 (T8): el backend recalcula precio y total desde el medicamento, así
+// que el cliente ya no los manda. usuarioId también se retiró del body:
+// sale del token JWT.
 
 export class CrearDetalleVentaDto {
   @IsString()
@@ -9,24 +13,9 @@ export class CrearDetalleVentaDto {
   @IsInt()
   @Min(1)
   cantidad!: number;
-
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  precio!: number;
-
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  total!: number;
 }
 
 export class CreateVentaDto {
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  usuarioId?: number;
-
   @IsString()
   cliente!: string;
 
@@ -35,11 +24,6 @@ export class CreateVentaDto {
 
   @IsDateString()
   fecha!: string;
-
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  total!: number;
 
   @IsArray()
   @ValidateNested({ each: true })
