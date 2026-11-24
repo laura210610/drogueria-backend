@@ -1,19 +1,33 @@
-import {Body,Controller,Delete,Get,HttpCode,HttpStatus,Param,Patch,Post,} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { MedicamentoService } from './medicamento.service';
 import { CreateMedicamentoDto } from './dto/create-medicamento.dto';
 import { UpdateMedicamentoDto } from './dto/update-medicamento.dto';
-import { Public } from '../common/decorators/public.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
 
-// TODO Fase 2/3/4: quitar @Public() y exigir token/roles cuando el frontend envíe el JWT en todos los módulos de medicamentos.
-@Public()
+// Sin @Public: todas las rutas exigen token. Las consultas (GET) valen
+// para cualquier rol autenticado; el CRUD solo para admin (RolesGuard global).
 @Controller('medicamento')
 export class MedicamentoController {
-
   constructor(private readonly medicamentoService: MedicamentoService) {}
 
   @Get()
-  findAll() {
-    return this.medicamentoService.findAll();
+  findAll(
+    @Query('nombre') nombre?: string,
+    @Query('laboratorio') laboratorio?: string,
+    @Query('estado') estado?: string,
+  ) {
+    return this.medicamentoService.findAll({ nombre, laboratorio, estado });
   }
 
   @Get(':id')
@@ -21,23 +35,22 @@ export class MedicamentoController {
     return this.medicamentoService.findOne(id);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() datos: UpdateMedicamentoDto,
-  ) {
-    return this.medicamentoService.update(id, datos);
-  }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string) {
-    await this.medicamentoService.remove(id);
-  }
-
+  @Roles('admin')
   @Post()
   create(@Body() datos: CreateMedicamentoDto) {
     return this.medicamentoService.create(datos);
   }
 
+  @Roles('admin')
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() datos: UpdateMedicamentoDto) {
+    return this.medicamentoService.update(id, datos);
+  }
+
+  @Roles('admin')
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string): Promise<void> {
+    await this.medicamentoService.remove(id);
+  }
 }
