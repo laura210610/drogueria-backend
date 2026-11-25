@@ -110,7 +110,7 @@ molestan: Prisma las ignora. No borres datos ni el esquema para hacer esto.
 | Comando | Qué hace |
 | --- | --- |
 | `npm run start:dev` | Servidor en modo watch |
-| `npm run start:prod` | Ejecuta `dist/main` (requiere `npm run build` antes) |
+| `npm run start:prod` | Ejecuta `dist/src/main.js` (requiere `npm run build` antes) |
 | `npm run build` | Compila a `dist/` |
 | `npm test` | Tests unitarios (Jest, sin base de datos: Prisma va mockeado) |
 | `npm run test:e2e` | Tests end-to-end |
