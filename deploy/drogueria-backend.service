@@ -1,0 +1,50 @@
+# Unidad de systemd para el backend NestJS (Droguería Pili) en el VPS.
+#
+# Instalar con:
+#   sudo install -m 644 deploy/drogueria-backend.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#
+# No hay migraciones en la unidad: corren en el pipeline (ver .github/workflows/deploy.yml),
+# así que cada deploy llega con la base ya actualizada y el servicio solo arranca la app.
+#
+# Sobre las variables de entorno: el proceso recibe las de backend.env ANTES de
+# arrancar (systemd las inyecta al leer EnvironmentFile). El main.ts del backend
+# hace `import 'dotenv/config'`, pero dotenv NO sobrescribe variables que ya
+# existen en el entorno: solo llena los huecos. Por eso en producción manda
+# /etc/drogueria/backend.env y el .env nunca cambia el comportamiento (además
+# rsync no lo copia al servidor: está excluido del deploy).
+
+[Unit]
+Description=Backend Drogueria Pili (NestJS) - API REST
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=drogueria
+Group=drogueria
+WorkingDirectory=/srv/drogueria/backend
+
+# Secretos y configuracion de runtime (propietario drogueria, modo 600).
+EnvironmentFile=/etc/drogueria/backend.env
+Environment=NODE_ENV=production
+
+ExecStart=/usr/bin/node dist/src/main.js
+Restart=always
+RestartSec=5
+
+# Logs a journald: ver con `journalctl -u drogueria-backend -f`.
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=drogueria-backend
+
+# Endurecimiento: el proceso corre sin privilegios extra, con /tmp propio,
+# el sistema de archivos en solo lectura y sin acceso a /home.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/srv/drogueria/backend
+
+[Install]
+WantedBy=multi-user.target

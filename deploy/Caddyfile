@@ -1,0 +1,42 @@
+# Proxy inverso del VPS: frontend Angular (SSR) en / y backend NestJS en /api.
+#
+# Instalar con:
+#   sudo install -m 644 deploy/Caddyfile /etc/caddy/Caddyfile
+#
+# El dominio NO esta escrito en este archivo: se toma de la variable de entorno
+# {$DOMINIO} que Caddy expande a la hora de arrancar/validar. En el VPS queda
+# definida en /etc/default/caddy (ver deploy/DESPLIEGUE.md).
+
+{$DOMINIO} {
+	# Compresion para las dos rutas.
+	encode zstd gzip
+
+	# El backend define sus rutas SIN prefijo (POST /auth/login, no /api/auth/login).
+	# `handle_path` es lo que hace que funcione sin cambiar nada del backend: ademas
+	# de despachar /api/* al backend, le QUITA el prefijo /api a la peticion antes
+	# de reenviarla, asi el backend sigue compilado con sus rutas de siempre.
+	handle_path /api/* {
+		reverse_proxy 127.0.0.1:3000
+	}
+
+	# Todo lo demas es el frontend (SSR, puerto 4000, mismo origen que /api:
+	# por eso CORS desaparece del camino de produccion).
+	handle {
+		reverse_proxy 127.0.0.1:4000
+	}
+
+	# Cabeceras de seguridad. `header` corre antes que los `handle`,
+	# asi que aplican a la respuesta del frontend y del backend.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Access log en formato JSON ({user_id},{ts},{req},{resp},...) para analizarlo.
+	log {
+		output file /var/log/caddy/drogueria-access.log
+		format json
+	}
+}

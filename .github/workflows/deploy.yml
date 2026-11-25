@@ -1,0 +1,166 @@
+# CI/CD del backend Drogueria Pili.
+#
+# verificar: corre siempre en cada push a main (y en los PRs). Compila, lintea,
+#   corre los tests unitarios y, contra un PostgreSQL desechable, aplica las
+#   migraciones y levanta los tests e2e. Este paso es el que hubiera detectado
+#   el bug P3018 (migraciones sobre bases nuevas con esquema distinto), asi que
+#   es permanente, no opcional.
+#
+# desplegar: Solo si verificar esta en verde y la variable de repositorio
+#   DEPLOY_ENABLED esta en `true` (variables si se pueden usar en `if`; los
+#   secretos no). Mientras el VPS no exista, la variable no se define y este
+#   job queda apagado. Sin Docker: rsync + build + migraciones + systemd remotos.
+
+name: CI/CD backend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Nunca desplegar dos veces a la vez: los pushes que se solapan hacen fila.
+# cancel-in-progress: false porque cada deploy pendiente sigue siendo necesario.
+concurrency:
+  group: despliegue-backend
+
+jobs:
+  verificar:
+    name: Verificar backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: prueba
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Chequeo de tipos
+        run: npx tsc --noEmit -p tsconfig.json
+
+      - name: Tests unitarios
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # Contra el PostgreSQL desechable del service container.
+      # La app lee DATABASE_URL/JWT_SECRET del entorno; dotenv no los
+      # sobrescribe. El postinstall de `npm ci` ya corre `prisma generate`,
+      # se repite explicito para dejar el orden documentado (es requisito
+      # para que los e2e importen el cliente generado).
+      - name: Migrar y correr tests e2e sobre PostgreSQL desechable
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/prueba
+          JWT_SECRET: secreto-de-prueba-solo-ci
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+          npm run test:e2e
+
+  desplegar:
+    name: Desplegar al VPS
+    needs: verificar
+    # Solo push a main con el interruptor encendido (los PRs verifican, no despliegan).
+    if: >-
+      vars.DEPLOY_ENABLED == 'true' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: produccion
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar SSH (llave dedicada + host pinneado)
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_drogueria_deploy
+          chmod 600 ~/.ssh/id_drogueria_deploy
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Sincronizar backend/ con rsync
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          rsync -az --delete \
+            --exclude node_modules/ \
+            --exclude dist/ \
+            --exclude .env \
+            --exclude generated/ \
+            --exclude coverage/ \
+            -e "ssh -i ~/.ssh/id_drogueria_deploy -o StrictHostKeyChecking=yes -o BatchMode=yes" \
+            backend/ "$VPS_USER@$VPS_HOST:/srv/drogueria/backend/"
+
+      # Todo en un solo script remoto para que la compilacion, la migracion y
+      # el reinicio no queden a medias si el run se corta entre pasos.
+      - name: Compilar, migrar y reiniciar (con healthcheck)
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          ssh -i ~/.ssh/id_drogueria_deploy \
+              -o StrictHostKeyChecking=yes -o BatchMode=yes \
+              "$VPS_USER@$VPS_HOST" 'bash -s' <<'FIN'
+          set -euo pipefail
+          cd /srv/drogueria/backend
+
+          # Cargar las variables de runtime (DATABASE_URL de Railway, etc.)
+          # para que npm, prisma y el build las vean.
+          set -a
+          . /etc/drogueria/backend.env
+          set +a
+
+          npm ci
+          npx prisma generate
+          npm run build
+          npx prisma migrate deploy
+
+          sudo systemctl restart drogueria-backend
+
+          # Healthcheck: hasta 30s esperando que / responda en el loopback.
+          esperado=0
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null 2>&1; then
+              echo "Backend arriba tras ${i}s."
+              esperado=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$esperado" -ne 1 ]; then
+            echo "ERROR: el backend no respondio en 30s. Ultimas 50 lineas del journal:"
+            sudo journalctl -u drogueria-backend -n 50 --no-pager
+            exit 1
+          fi
+          FIN
